@@ -2,7 +2,7 @@ resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
 
   route {
-    cidr_block = varr.default_cidr_block # Reference the variable
+    cidr_block = var.default_cidr_block # Reference the variable
     gateway_id = aws_internet_gateway.gw.id
   }
 
