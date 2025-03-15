@@ -154,12 +154,13 @@ variable "ec2_root_volume_type" {
 variable "ec2_key_pair" {
   description = "The key pair to access the instance"
   type        = string
+  default     = "csye6225"
 }
 
-variable "ec2_subnet_id" {
-  description = "Subnet ID where the EC2 instance will be launched"
-  type        = string
-}
+# variable "ec2_subnet_id" {
+#   description = "Subnet ID where the EC2 instance will be launched"
+#   type        = string
+# }
 
 variable "ec2_protect_termination" {
   description = "Enable or disable termination protection"
