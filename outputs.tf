@@ -12,3 +12,11 @@ output "private_subnets" {
   description = "IDs of the private subnets"
   value       = aws_subnet.private[*].id
 }
+
+output "s3_bucket_name" {
+  description = "The unique UUID for the S3 bucket"
+  value       = "csye6225-${random_uuid.bucket_uuid.result}"
+}
+
+
+

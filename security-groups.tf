@@ -69,3 +69,31 @@ resource "aws_security_group" "app_sg" {
     Name = var.app_sg_name
   }
 }
+
+resource "aws_security_group" "rds_sg" {
+  name        = var.rds_sg_name
+  description = var.rds_sg_description
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port       = var.rds_sg_ingress_port
+    to_port         = var.rds_sg_ingress_port
+    protocol        = var.rds_sg_ingress_protocol
+    security_groups = [aws_security_group.app_sg.id] # Reference EC2 security group
+  }
+
+  egress {
+    from_port   = var.rds_sg_egress_port
+    to_port     = var.rds_sg_egress_port
+    protocol    = var.rds_sg_egress_protocol
+    cidr_blocks = var.rds_sg_egress_cidr_blocks
+  }
+
+  tags = {
+    Name = var.rds_sg_name
+  }
+
+  # Ensure RDS security group depends on the EC2 security group
+  depends_on = [aws_security_group.app_sg]
+}
+
