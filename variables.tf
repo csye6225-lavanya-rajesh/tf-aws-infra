@@ -167,3 +167,137 @@ variable "ec2_protect_termination" {
   type        = bool
   default     = false
 }
+
+variable "rds_sg_name" {
+  description = "The name of the RDS security group"
+  type        = string
+  default     = "database"
+}
+
+variable "rds_sg_description" {
+  description = "The description of the RDS security group"
+  type        = string
+  default     = "EC2 Security group for RDS instance"
+}
+
+variable "rds_sg_ingress_port" {
+  description = "The staring and ending port to allow for ingress traffic on the RDS security group"
+  type        = number
+  default     = 5432 # Default to PostgreSQL port
+}
+
+variable "rds_sg_ingress_protocol" {
+  description = "The protocol for ingress traffic"
+  type        = string
+  default     = "tcp" # Default to TCP protocol
+}
+
+variable "rds_sg_egress_port" {
+  description = "The starting and ending port for egress traffic on the RDS security group"
+  type        = number
+  default     = 0
+}
+
+variable "rds_sg_egress_protocol" {
+  description = "The protocol for egress traffic"
+  type        = string
+  default     = "-1" # Any protocol
+}
+
+variable "rds_sg_egress_cidr_blocks" {
+  description = "CIDR blocks for egress traffic"
+  type        = list(string)
+  default     = ["0.0.0.0/0"] # Allow traffic to anywhere
+}
+
+# Database Engine (PostgreSQL, MySQL, MariaDB)
+variable "db_engine" {
+  description = "The database engine for the RDS instance"
+  type        = string
+  default     = "postgres" # Change this to "mysql" or "mariadb" if needed
+}
+
+# DB Instance Identifier
+variable "db_instance_identifier" {
+  description = "The unique identifier for the RDS instance"
+  type        = string
+  default     = "csye6225" # Adjust as needed
+}
+
+# DB Instance Class
+variable "db_instance_class" {
+  description = "The class of the RDS instance (e.g., db.t2.micro)"
+  type        = string
+  default     = "db.t3.micro"
+}
+
+# Allocated Storage Size (in GB)
+variable "db_storage_size" {
+  description = "The allocated storage size for the RDS instance (in GB)"
+  type        = number
+  default     = 20
+}
+
+# Database Name
+variable "db_name" {
+  description = "The name of the database to create in the RDS instance"
+  type        = string
+  default     = "csye6225"
+}
+
+# Master Username for the DB
+variable "db_username" {
+  description = "The master username for the RDS instance"
+  type        = string
+  default     = "csye6225"
+}
+
+# Master Password for the DB
+variable "db_password" {
+  description = "The master password for the RDS instance"
+  type        = string
+  sensitive   = true
+}
+
+# DB Parameter Group Name
+variable "db_parameter_group_name" {
+  description = "The name of the custom DB parameter group"
+  type        = string
+  default     = "db-parameter-group"
+}
+
+# DB Subnet Group Name
+variable "db_subnet_group_name" {
+  description = "The name of the DB subnet group"
+  type        = string
+  default     = "db-subnet-group"
+}
+
+# DB Security Group Name
+variable "db_security_group_name" {
+  description = "The name of the security group for the RDS instance"
+  type        = string
+  default     = "db_security_group"
+}
+
+# Backup Retention Period (in days)
+variable "db_backup_retention_period" {
+  description = "The backup retention period for the RDS instance (in days)"
+  type        = number
+  default     = 7
+}
+
+# Flag for Multi-AZ Deployment
+variable "db_multi_az" {
+  description = "Whether to enable Multi-AZ deployment for the RDS instance"
+  type        = bool
+  default     = false
+}
+
+# Flag for Public Accessibility
+variable "db_publicly_accessible" {
+  description = "Whether the RDS instance should be publicly accessible"
+  type        = bool
+  default     = false
+}
+
