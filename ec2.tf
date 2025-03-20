@@ -16,19 +16,19 @@ resource "aws_instance" "app_server" {
 
   user_data = <<-EOF
     #!/bin/bash
-    rm -f /opt/webapp/webapp/.env  # Remove the old .env file
+    rm -f /opt/webapp/.env  # Remove the old .env file
 
     # Create the new .env file with the correct values
-    # echo "DATABASE_URL=postgres://${var.db_username}:${var.db_password}@${aws_db_instance.main.endpoint}/${var.db_name}" > /opt/webapp/webapp/.env
-    echo "DB_HOST=$(echo "${aws_db_instance.main.endpoint}" | sed 's/:.*//')" >> /opt/webapp/webapp/.env
-    echo "DB_PORT=${var.rds_sg_ingress_port}" >> /opt/webapp/webapp/.env
-    echo "DB_USER=${var.db_username}" >> /opt/webapp/webapp/.env
-    echo "DB_PASSWORD=${var.db_password}" >> /opt/webapp/webapp/.env
-    echo "DB_NAME=${var.db_name}" >> /opt/webapp/webapp/.env
-    echo "DB_DIALECT=postgres" >> /opt/webapp/webapp/.env
-    echo "S3_BUCKET=${aws_s3_bucket.private_bucket.bucket}" >> /opt/webapp/webapp/.env
-    echo "AWS_REGION=${var.aws_region}" >> /opt/webapp/webapp/.env
-    echo "AWS_PROFILE=${var.aws_profile}" >> /opt/webapp/webapp/.env
+    # echo "DATABASE_URL=postgres://${var.db_username}:${var.db_password}@${aws_db_instance.main.endpoint}/${var.db_name}" > /opt/webapp/.env
+    echo "DB_HOST=$(echo "${aws_db_instance.main.endpoint}" | sed 's/:.*//')" >> /opt/webapp/.env
+    echo "DB_PORT=${var.rds_sg_ingress_port}" >> /opt/webapp/.env
+    echo "DB_USER=${var.db_username}" >> /opt/webapp/.env
+    echo "DB_PASSWORD=${var.db_password}" >> /opt/webapp/.env
+    echo "DB_NAME=${var.db_name}" >> /opt/webapp/.env
+    echo "DB_DIALECT=postgres" >> /opt/webapp/.env
+    echo "S3_BUCKET=${aws_s3_bucket.private_bucket.bucket}" >> /opt/webapp/.env
+    echo "AWS_REGION=${var.aws_region}" >> /opt/webapp/.env
+    echo "AWS_PROFILE=${var.aws_profile}" >> /opt/webapp/.env
 
     sudo systemctl restart webapp.service
   EOF
