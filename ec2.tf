@@ -25,13 +25,53 @@ resource "aws_instance" "app_server" {
     echo "DB_USER=${var.db_username}" >> /opt/webapp/.env
     echo "DB_PASSWORD=${var.db_password}" >> /opt/webapp/.env
     echo "DB_NAME=${var.db_name}" >> /opt/webapp/.env
-    echo "DB_DIALECT=postgres" >> /opt/webapp/.env
+    echo "DB_DIALECT=${var.db_engine}" >> /opt/webapp/.env
     echo "S3_BUCKET=${aws_s3_bucket.private_bucket.bucket}" >> /opt/webapp/.env
     echo "AWS_REGION=${var.aws_region}" >> /opt/webapp/.env
     echo "AWS_PROFILE=${var.aws_profile}" >> /opt/webapp/.env
 
+    # Create CloudWatch Agent configuration file
+    sudo mkdir -p /opt/aws/amazon-cloudwatch-agent/etc/
+
+    sudo tee /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-config.json > /dev/null <<'EOC'
+    {
+      "agent": {
+        "metrics_collection_interval": 10,
+        "logfile": "/var/log/cloudwatch-config.log"
+      },
+      "logs": {
+        "logs_collected": {
+          "files": {
+            "collect_list": [
+              {
+                "file_path": "/var/log/csye6225.log",
+                "log_group_name": "csye6225",
+                "log_stream_name": "webapp"
+              }
+            ]
+          }
+        }
+      },
+      "metrics": {
+        "metrics_collected": {
+          "statsd": {
+            "service_address": ":8125",
+            "metrics_collection_interval": 10,
+            "metrics_aggregation_interval": 60,
+            "metric_separator": "."
+          }
+        }
+      }
+    }
+    EOC
+
+    # Run the CloudWatch Agent with the provided configuration
+    sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:/opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-config.json -s
+
+    sudo systemctl restart amazon-cloudwatch-agent
+
     sudo systemctl restart webapp.service
-  EOF
+ EOF
 
   tags = {
     Name = "App Instance-${var.env_name}"
