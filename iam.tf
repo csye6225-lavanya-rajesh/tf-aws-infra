@@ -48,9 +48,39 @@ resource "aws_iam_policy" "s3_access_policy" {
   EOF
 }
 
+# Attach CloudWatch Agent Policy to the IAM Role
+resource "aws_iam_policy" "cloudwatch_agent_policy" {
+  name        = "CloudWatchAgentPolicy"
+  description = "Allow EC2 instance to access Cloud Watch"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "cloudwatch:PutMetricData",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents",
+          "logs:DescribeLogStreams",
+          "logs:DescribeLogGroups",
+          "logs:CreateLogGroup"
+        ]
+        Effect   = "Allow"
+        Resource = "*"
+      }
+    ]
+  })
+}
+
 resource "aws_iam_role_policy_attachment" "s3_attachment" {
   role       = aws_iam_role.ec2_role.name
   policy_arn = aws_iam_policy.s3_access_policy.arn
+}
+
+# Attach the CloudWatch policy to the EC2 role 
+resource "aws_iam_role_policy_attachment" "cloudwatch_attachment" {
+  role       = aws_iam_role.ec2_role.name
+  policy_arn = aws_iam_policy.cloudwatch_agent_policy.arn
 }
 
 resource "aws_iam_instance_profile" "ec2_profile" {
