@@ -59,6 +59,15 @@ resource "aws_instance" "app_server" {
             "metrics_collection_interval": 10,
             "metrics_aggregation_interval": 60,
             "metric_separator": "."
+          },
+          "cpu": {                     
+            "measurement": [
+              "cpu_usage_idle",
+              "cpu_usage_user",
+              "cpu_usage_system"
+            ],
+            "metrics_collection_interval": 10,
+            "totalcpu": true
           }
         }
       }

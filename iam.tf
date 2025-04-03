@@ -72,6 +72,11 @@ resource "aws_iam_policy" "cloudwatch_agent_policy" {
   })
 }
 
+resource "aws_iam_role_policy_attachment" "route53_attachment" {
+  role       = aws_iam_role.ec2_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonRoute53FullAccess"
+}
+
 resource "aws_iam_role_policy_attachment" "s3_attachment" {
   role       = aws_iam_role.ec2_role.name
   policy_arn = aws_iam_policy.s3_access_policy.arn
@@ -81,6 +86,11 @@ resource "aws_iam_role_policy_attachment" "s3_attachment" {
 resource "aws_iam_role_policy_attachment" "cloudwatch_attachment" {
   role       = aws_iam_role.ec2_role.name
   policy_arn = aws_iam_policy.cloudwatch_agent_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "ec2_ssm" {
+  role       = aws_iam_role.ec2_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
 
 resource "aws_iam_instance_profile" "ec2_profile" {

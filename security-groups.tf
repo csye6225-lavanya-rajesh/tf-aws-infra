@@ -21,40 +21,25 @@ resource "aws_security_group" "default" {
   }
 }
 
-# Application Security Group for EC2 Instances
 resource "aws_security_group" "app_sg" {
   name        = var.app_sg_name
   description = var.app_sg_description
   vpc_id      = aws_vpc.main.id
 
-  # Allow SSH access
-  dynamic "ingress" {
-    for_each = var.app_sg_ingress_ssh_ports
-    content {
-      from_port   = ingress.value
-      to_port     = ingress.value
-      protocol    = "tcp"
-      cidr_blocks = var.app_sg_ingress_cidr
-    }
-  }
-
-  # Allow HTTP and HTTPS access
-  dynamic "ingress" {
-    for_each = var.app_sg_ingress_web_ports
-    content {
-      from_port   = ingress.value
-      to_port     = ingress.value
-      protocol    = "tcp"
-      cidr_blocks = var.app_sg_ingress_cidr
-    }
-  }
-
-  # Allow custom application port
+  # Allow SSH access only from a specific source (optional)
   ingress {
-    from_port   = var.app_port
-    to_port     = var.app_port
+    from_port   = 22
+    to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = var.app_sg_ingress_cidr
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Allow traffic from load balancer on app port
+  ingress {
+    from_port       = var.app_port
+    to_port         = var.app_port
+    protocol        = "tcp"
+    security_groups = [aws_security_group.loadbalancer_sg.id] # Allow traffic from load balancer security group
   }
 
   # Allow all outbound traffic
@@ -69,6 +54,7 @@ resource "aws_security_group" "app_sg" {
     Name = var.app_sg_name
   }
 }
+
 
 resource "aws_security_group" "rds_sg" {
   name        = var.rds_sg_name
@@ -96,4 +82,37 @@ resource "aws_security_group" "rds_sg" {
   # Ensure RDS security group depends on the EC2 security group
   depends_on = [aws_security_group.app_sg]
 }
+
+resource "aws_security_group" "loadbalancer_sg" {
+  name        = "load_balancer_sg"
+  description = "Allow HTTP and HTTPS traffic to the Load Balancer"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "load-balancer-sg"
+  }
+}
+
+
 
