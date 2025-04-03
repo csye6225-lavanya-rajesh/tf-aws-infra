@@ -10,6 +10,13 @@ variable "aws_profile" {
   default     = "dev"
 }
 
+variable "domain_name" {
+  description = "The DNS domain name"
+  type        = string
+  default     = "lavanyarajesh.me"
+}
+
+
 variable "env_name" {
   description = "The environment name (e.g., dev, staging, prod)"
   type        = string
@@ -88,7 +95,7 @@ variable "security_group_egress_cidr" {
 variable "app_port" {
   description = "The port on which the application runs"
   type        = number
-  default     = 8080 # Change this if needed
+  default     = 8080
 }
 
 variable "app_sg_name" {
