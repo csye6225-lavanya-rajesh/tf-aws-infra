@@ -8,7 +8,7 @@ resource "aws_secretsmanager_secret" "db_password" {
 resource "random_password" "rds_password" {
   length           = 16
   special          = true
-  override_special = "!#$%&'()*+,-.:;<=>?[\\]^_`{|}~" # Valid special characters allowed by AWS RDS
+  override_special = "!#$%&" # Valid special characters allowed by AWS RDS
 }
 
 # Secrets Manager secret version

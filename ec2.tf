@@ -20,16 +20,6 @@ resource "aws_instance" "app_server" {
     #!/bin/bash
     rm -f /opt/webapp/.env  # Remove the old .env file
 
-    # Install necessary tools
-    yum install -y jq aws-cli
-
-    # Install AWS CLI v2
-    cd /tmp
-    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-    unzip -q awscliv2.zip
-    sudo ./aws/install
-    export PATH=$PATH:/usr/local/bin
-
     # Fetch the database credentials from Secrets Manager
     SECRET_JSON=$(aws secretsmanager get-secret-value \
       --region ${var.aws_region} \
