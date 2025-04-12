@@ -8,16 +8,51 @@ resource "aws_launch_template" "webapp_launch_template" {
     name = aws_iam_instance_profile.ec2_profile.name # Replace with the IAM role for EC2 instances
   }
 
+  block_device_mappings {
+    device_name = "/dev/sda1" # Root device for your AMI
+    ebs {
+      volume_size = var.ec2_root_volume_size
+      volume_type = var.ec2_root_volume_type
+      encrypted   = true
+      kms_key_id  = aws_kms_key.ec2.arn # Your EC2-specific KMS key
+    }
+  }
+
   user_data = base64encode(<<-EOF
     #!/bin/bash
     rm -f /opt/webapp/.env  # Remove the old .env file
+
+    # Install necessary tools
+    yum install -y jq aws-cli
+
+    # Install AWS CLI v2
+    cd /tmp
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+    unzip -q awscliv2.zip
+    sudo ./aws/install
+    export PATH=$PATH:/usr/local/bin
+
+    # Fetch the database credentials from Secrets Manager
+    SECRET_JSON=$(aws secretsmanager get-secret-value \
+      --region ${var.aws_region} \
+      --secret-id ${aws_secretsmanager_secret.db_password.name} \
+      --query 'SecretString' \
+      --output text)
+
+    DB_PASSWORD=$(echo "$SECRET_JSON" | jq -r '.password')
+
+    # Validate the password is extracted
+    if [ -z "$DB_PASSWORD" ]; then
+      echo "Failed to retrieve DB password from Secrets Manager." >&2
+      exit 1
+    fi
 
     # Create the new .env file with the correct values
     # echo "DATABASE_URL=postgres://${var.db_username}:${var.db_password}@${aws_db_instance.main.endpoint}/${var.db_name}" > /opt/webapp/.env
     echo "DB_HOST=$(echo "${aws_db_instance.main.endpoint}" | sed 's/:.*//')" >> /opt/webapp/.env
     echo "DB_PORT=${var.rds_sg_ingress_port}" >> /opt/webapp/.env
     echo "DB_USER=${var.db_username}" >> /opt/webapp/.env
-    echo "DB_PASSWORD=${var.db_password}" >> /opt/webapp/.env
+    echo "DB_PASSWORD=$DB_PASSWORD" >> /opt/webapp/.env
     echo "DB_NAME=${var.db_name}" >> /opt/webapp/.env
     echo "DB_DIALECT=${var.db_engine}" >> /opt/webapp/.env
     echo "S3_BUCKET=${aws_s3_bucket.private_bucket.bucket}" >> /opt/webapp/.env
@@ -81,6 +116,11 @@ resource "aws_launch_template" "webapp_launch_template" {
     associate_public_ip_address = true
     security_groups             = [aws_security_group.app_sg.id]
   }
+
+  depends_on = [
+    aws_kms_key.ec2,
+    aws_iam_instance_profile.ec2_profile
+  ]
 }
 
 resource "aws_autoscaling_group" "webapp_asg" {

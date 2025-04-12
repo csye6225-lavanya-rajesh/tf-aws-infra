@@ -18,5 +18,14 @@ output "s3_bucket_name" {
   value       = "csye6225-${random_uuid.bucket_uuid.result}"
 }
 
+data "aws_kms_key" "ec2_key_check" {
+  key_id = aws_kms_alias.ec2_alias.id # Replace with your key alias/ARN
+}
+
+output "kms_key_state" {
+  description = "key state"
+  value       = data.aws_kms_key.ec2_key_check.key_state
+}
+
 
 

@@ -264,6 +264,7 @@ variable "db_password" {
   description = "The master password for the RDS instance"
   type        = string
   sensitive   = true
+  default     = "password123"
 }
 
 # DB Parameter Group Name
@@ -307,4 +308,10 @@ variable "db_publicly_accessible" {
   type        = bool
   default     = false
 }
+
+variable "demo_cert_arn" {
+  description = "ARN of the ACM certificate for the dev environment"
+  type        = string
+}
+
 
