@@ -33,16 +33,36 @@ resource "aws_lb_target_group" "webapp_target_group" {
   }
 }
 
-resource "aws_lb_listener" "webapp_listener" {
+data "aws_acm_certificate" "dev_cert" {
+  domain      = var.aws_profile == "dev" ? "dev.lavanyarajesh.me" : "demo.lavanyarajesh.me"
+  most_recent = true
+}
+
+
+# HTTPS listener with existing certificate
+resource "aws_lb_listener" "dev_https" {
   load_balancer_arn = aws_lb.webapp_alb.arn
-  port              = 80
-  protocol          = "HTTP"
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  certificate_arn   = var.aws_profile == "dev" ? data.aws_acm_certificate.dev_cert.arn : var.demo_cert_arn
 
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.webapp_target_group.arn
   }
 }
+
+# resource "aws_lb_listener" "webapp_listener" {
+#   load_balancer_arn = aws_lb.webapp_alb.arn
+#   port              = 80
+#   protocol          = "HTTP"
+
+#   default_action {
+#     type             = "forward"
+#     target_group_arn = aws_lb_target_group.webapp_target_group.arn
+#   }
+# }
 
 resource "aws_autoscaling_attachment" "asg_attachment" {
   autoscaling_group_name = aws_autoscaling_group.webapp_asg.name
